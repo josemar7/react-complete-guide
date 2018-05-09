@@ -1,12 +1,13 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 import Person from './Person/Person';
 
-class Persons extends Component {
+class Persons extends PureComponent {
 
     constructor(props) {
         super(props);
         console.log('[Persons.js] Inside Contructor', props);
+        this.lastPersonRef = React.createRef();
       }
     
       componentWillMount() {
@@ -15,6 +16,27 @@ class Persons extends Component {
     
       componentDidMount() {
         console.log('[Persons.js] Inside componentDidMount()');
+        this.lastPersonRef.current.focus();
+      }
+
+      componentWillReceiveProps(nextProps) {
+        console.log('[UPDATE Persons.js] Inside componentWillReceiveProps', nextProps);
+      }
+
+      // shouldComponentUpdate(nextProps, nextState) {
+      //   console.log('[UPDATE Persons.js] Inside shouldComponentUpdate', nextProps, nextState);
+      //   return nextProps.persons !== this.props.persons 
+      //     || nextProps.changed !== this.props.changed
+      //     || nextProps.clicked !== this.props.clicked;
+      //   // return true;
+      // }
+
+      componentWillUpdate(nextProps, nextState) {
+        console.log('[UPDATE Persons.js] Inside componentWillUpdate', nextProps, nextState);
+      }
+
+      componentDidUpdate() {
+        console.log('[UPDATE Persons.js] Inside componentDidUpdate');
       }
     
     render() {
@@ -23,7 +45,9 @@ class Persons extends Component {
             return <ErrorBoundary key={person.id}><Person 
                     click={() => this.props.clicked(index)}
                     name={person.name} 
-                    age={person.age}                    
+                    position={index}
+                    age={person.age}      
+                    ref={this.lastPersonRef}  
                     changed={(event) => this.props.changed(event, person.id)} />
                     </ErrorBoundary>
           });    

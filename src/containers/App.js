@@ -1,9 +1,13 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import classes from './App.css';
 import Persons from '../components/Persons/Persons';
 import Cockpit from '../components/Cockpit/Cockpit';
+import Aux from '../hoc/Aux';
+import withClass from '../hoc/withClass';
 
-class App extends Component {
+export const AuthContext = React.createContext(false);
+
+class App extends PureComponent {
 
   constructor(props) {
     super(props);
@@ -14,7 +18,9 @@ class App extends Component {
         { id: 'c', name: 'Stephanie', age: 26}
       ],
       otherState: 'Some other value',
-      showPersons: false
+      showPersons: false,
+      toggleClicked: 0,
+      authenticated: false
     };      
     console.log('[App.js] Inside Contructor', props);
   }
@@ -25,6 +31,29 @@ class App extends Component {
 
   componentDidMount() {
     console.log('[App.js] Inside componentDidMount()');
+  }
+
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   console.log('[UPDATE App.js] Inside shouldComponentUpdate', nextProps, nextState);
+  //   return nextState.persons !== this.state.persons 
+  //     || nextState.showPersons !== this.state.showPersons;
+  // }
+
+  componentWillUpdate(nextProps, nextState) {
+    console.log('[UPDATE App.js] Inside componentWillUpdate', nextProps, nextState);
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    console.log('[UPDATE App.js] Inside getDerivedStateFromProps', nextProps, prevState);
+    return prevState;
+  }
+
+  getSnapshotBeforeUpdate() {
+    console.log('[UPDATE App.js] Inside getSnapshotBeforeUpdate');
+  }
+
+  componentDidUpdate() {
+    console.log('[UPDATE App.js] Inside componentDidUpdate');
   }
 
   nameChangedHandler = (event, id) => {
@@ -54,8 +83,17 @@ class App extends Component {
 
   togglePersonsHandler = () => {
     const doesShow = this.state.showPersons;
-    this.setState({showPersons: !doesShow});
+    this.setState((prevState, props) => {
+      return {
+        showPersons: !doesShow, 
+        toggleClicked: prevState.toggleClicked + 1  
+      }
+    });
   };
+
+  loginHandler = () => {
+    this.setState({authenticated: true});
+  }
 
   render() {
     console.log('[App.js] Inside render()');
@@ -69,17 +107,21 @@ class App extends Component {
     }
 
     return (
-      <div className={classes.App}>
+      <Aux>
+        <button onClick={() => {this.setState({showPersons: true})}}>Show Persons</button>
         <Cockpit 
           appTitle={this.props.title}
           showPersons={this.state.showPersons}
           persons={this.state.persons}
+          login={this.loginHandler}
           clicked={this.togglePersonsHandler}/>
-        {persons}
-      </div>
+          <AuthContext.Provider value={this.state.authenticated}>
+            {persons}
+          </AuthContext.Provider>
+      </Aux>
     );
     // return React.createElement('div', {className: 'App'}, React.createElement('h1', null, 'Hi, I\'m a React App!!!'));
   }
 }
 
-export default App;
+export default withClass(App, classes.App);
